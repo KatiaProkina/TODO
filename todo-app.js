@@ -19,6 +19,14 @@
     buttonWrapper.classList.add("input-group-append");
     button.classList.add("btn", "btn-primary");
     button.textContent = "Добавить дело";
+    button.setAttribute("disabled", true);
+    input.addEventListener("input", function () {
+      if (input.value === "") {
+        button.disabled = true;
+      } else {
+        button.disabled = false;
+      }
+    });
 
     buttonWrapper.append(button);
     form.append(input);
@@ -83,12 +91,11 @@
     };
   }
 
-  document.addEventListener("DOMContentLoaded", function () {
-    let container = document.getElementById("todo-app");
-
-    let todoAppTitle = createAppTitle("Список дел");
+  function createTodoApp(container, title = "Список дел") {
+    let todoAppTitle = createAppTitle(title);
     let todoItemForm = createTodoItemForm();
     let todoList = createTodoList();
+
     container.append(todoAppTitle);
     container.append(todoItemForm.form);
     container.append(todoList);
@@ -98,7 +105,6 @@
       //эта строчка необходима, чтобы предотвратить стандартное действие браузера
       //в данном случае мы не хотим, чтобы страница перезагружалась при отправке форм
       e.preventDefault();
-      console.log(todoItemForm);
 
       //игнорируем создание элемента, если пользователь ничего не ввел в поле
       if (!todoItemForm.input.value) {
@@ -116,11 +122,15 @@
           todoItem.item.remove();
         }
       });
+
       // создаем и добавляем новое дело из поля для ввода
       todoList.append(todoItem.item);
 
       //обнуляем значение в поле, чтобы не пришлось стирать его вручную
       todoItemForm.input.value = "";
+      todoItemForm.button.disabled = true;
     });
-  });
+  }
+
+  window.createTodoApp = createTodoApp;
 })();
