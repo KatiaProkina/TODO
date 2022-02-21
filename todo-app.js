@@ -53,55 +53,30 @@
     return list;
   }
 
-  function createTodoItem(name) {
-    let item = document.createElement("li");
-    //кнопки помещаем в элемент, который красиво покажет их в группе
-
-    let buttonGroup = document.createElement("div");
-    let doneButton = document.createElement("button");
-    let deleteButton = document.createElement("button");
-
-    //устанавливаем стили для элемента списка, а так же для размещения кнопок
-    //в его правой части с помощью flex
-
-    item.classList.add(
-      "list-group-item",
-      "d-flex",
-      "justify-content-between",
-      "align-item-center"
-    );
-    item.textContent = name;
-
-    buttonGroup.classList.add("btn-group", "btn-group-sm");
-    doneButton.classList.add("btn", "btn-success");
-    doneButton.textContent = "Готово";
-    deleteButton.classList.add("btn", "btn-danger");
-    deleteButton.textContent = "Удалить";
-
-    //вкладываем кнопки в отдельный элемент, чтобы они объединились в один блок
-    buttonGroup.append(doneButton);
-    buttonGroup.append(deleteButton);
-    item.append(buttonGroup);
-
-    //приложению нужен доступ к самому элементу и кнопкам, чтобы обрабатывать события нажатия
-    return {
-      item,
-      doneButton,
-      deleteButton,
-    };
-  }
-
-  function createTodoApp(container, title = "Список дел") {
+  function createTodoApp(container, title = "Список дел", key) {
     let todoAppTitle = createAppTitle(title);
     let todoItemForm = createTodoItemForm();
     let todoList = createTodoList();
-
+    let localTodo = [];
+    function getObject() {
+      if (localStorage.getItem(key)) {
+        localTodo = JSON.parse(localStorage.getItem(key));
+      } else {
+        localTodo = [];
+      }
+    }
+    getObject();
     container.append(todoAppTitle);
     container.append(todoItemForm.form);
     container.append(todoList);
 
+    localTodo.forEach((item) => {
+      let newItem = createTodoItem(item);
+      todoList.append(newItem.item);
+    });
+
     //браузер создает событие submit на форме по нажатию на Enter или на кнопку создания дела
-    todoItemForm.form.addEventListener("submit", function (e) {
+    todoItemForm.form.addEventListener("submit", function s(e) {
       //эта строчка необходима, чтобы предотвратить стандартное действие браузера
       //в данном случае мы не хотим, чтобы страница перезагружалась при отправке форм
       e.preventDefault();
@@ -110,18 +85,14 @@
       if (!todoItemForm.input.value) {
         return;
       }
+      let todo = {
+        name: todoItemForm.input.value,
+        done: false,
+      };
+      let todoItem = createTodoItem(todo);
 
-      let todoItem = createTodoItem(todoItemForm.input.value);
-
-      //добавляем обработчик на кнопки
-      todoItem.doneButton.addEventListener("click", function () {
-        todoItem.item.classList.toggle("list-group-item-success");
-      });
-      todoItem.deleteButton.addEventListener("click", function () {
-        if (confirm("Вы уверены?")) {
-          todoItem.item.remove();
-        }
-      });
+      localTodo.push(todo);
+      localStorage.setItem(key, JSON.stringify(localTodo));
 
       // создаем и добавляем новое дело из поля для ввода
       todoList.append(todoItem.item);
@@ -130,6 +101,70 @@
       todoItemForm.input.value = "";
       todoItemForm.button.disabled = true;
     });
+
+    function createTodoItem(object) {
+      let item = document.createElement("li");
+      //кнопки помещаем в элемент, который красиво покажет их в группе
+
+      let buttonGroup = document.createElement("div");
+      let doneButton = document.createElement("button");
+      let deleteButton = document.createElement("button");
+
+      //устанавливаем стили для элемента списка, а так же для размещения кнопок
+      //в его правой части с помощью flex
+
+      item.classList.add(
+        "list-group-item",
+        "d-flex",
+        "justify-content-between",
+        "align-item-center"
+      );
+      item.textContent = object.name;
+
+      //добавляем обработчик на кнопки
+      doneButton.addEventListener("click", function () {
+        item.classList.toggle("list-group-item-success");
+        for (let i = 0; i < localTodo.length; i++) {
+          if (localTodo[i] === object) {
+            localTodo[i].done = true;
+          } else {
+            localTodo[i].done = false;
+          }
+          console.log(localTodo);
+          localTodo.slice(i);
+          localStorage.setItem(key, JSON.stringify(localTodo));
+        }
+      });
+      deleteButton.addEventListener("click", function () {
+        if (confirm("Вы уверены?")) {
+          for (let i = 0; i < localTodo.length; i++) {
+            if (localTodo[i].name === object.name) {
+              localTodo.splice(i, 1);
+              localStorage.setItem(key, JSON.stringify(localTodo));
+            }
+          }
+        }
+        item.remove();
+      });
+
+      buttonGroup.classList.add("btn-group", "btn-group-sm");
+      doneButton.classList.add("btn", "btn-success");
+      doneButton.textContent = "Готово";
+      deleteButton.classList.add("btn", "btn-danger");
+      deleteButton.textContent = "Удалить";
+
+      //вкладываем кнопки в отдельный элемент, чтобы они объединились в один блок
+      buttonGroup.append(doneButton);
+      buttonGroup.append(deleteButton);
+      item.append(buttonGroup);
+
+      //приложению нужен доступ к самому элементу и кнопкам, чтобы обрабатывать события нажатия
+      return {
+        item,
+        doneButton,
+        deleteButton,
+      };
+    }
   }
 
   window.createTodoApp = createTodoApp;
