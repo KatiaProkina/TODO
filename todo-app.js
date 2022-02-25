@@ -120,21 +120,22 @@
         "align-item-center"
       );
       item.textContent = object.name;
-
+ 
       //добавляем обработчик на кнопки
+      
       doneButton.addEventListener("click", function () {
-        item.classList.toggle("list-group-item-success");
+        item.classList.toggle("list-group-item-success")
         for (let i = 0; i < localTodo.length; i++) {
-          if (localTodo[i] === object) {
-            localTodo[i].done = true;
-          } else {
-            localTodo[i].done = false;
+          if (localTodo[i].name === object.name) {
+            localTodo[i].done = true
           }
-          console.log(localTodo);
-          localTodo.slice(i);
           localStorage.setItem(key, JSON.stringify(localTodo));
+          
         }
-      });
+      })
+      if(object.done === true){
+        item.classList.toggle("list-group-item-success")
+      }
       deleteButton.addEventListener("click", function () {
         if (confirm("Вы уверены?")) {
           for (let i = 0; i < localTodo.length; i++) {
@@ -146,7 +147,7 @@
         }
         item.remove();
       });
-
+    
       buttonGroup.classList.add("btn-group", "btn-group-sm");
       doneButton.classList.add("btn", "btn-success");
       doneButton.textContent = "Готово";
